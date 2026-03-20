@@ -15,6 +15,8 @@ pip install ddargparse
 
 Subclass `OptionsBase` and annotate fields with standard argparse metadata via the `dataclasses.field` function (`help`, `required`, `positional`, `metavar`). Then call `register_cli_args` to populate an `ArgumentParser` and `from_cli_args` to instantiate your options from the parsed result.
 
+### Step 1: Option dataclass definition
+
 ```python
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
@@ -33,9 +35,14 @@ class Options(ddargparse.OptionsBase):
         metadata={"help": "One or more tags"},
     )
 
+@dataclass
 class DoSomethingOptions(ddargparse.OptionsBase):
     threshold: str = field(metadata={"help": "Some threshold"})
+```
 
+### Step 2: CLI argument parser declaration
+
+```python
 parser = ArgumentParser()
 # register dataclass options as argparse parser arguments
 Options.register_cli_args(parser)
@@ -43,7 +50,11 @@ subparsers = parser.add_subparsers(dest="subcommand")
 subparser = subparsers.add_parser("do-something")
 # register dataclass options as argparse subparser arguments
 DoSomethingOptions.register_cli_args(subparser)
+```
 
+### Step 3: CLI argument parsing and option dataclass instantiation
+
+```python
 args = parser.parse_args()
 # obtain instance of dataclass with global options
 options = Options.from_cli_args(args)
