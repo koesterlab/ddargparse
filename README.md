@@ -22,7 +22,7 @@ import ddargparse
 
 @dataclass
 class Options(ddargparse.OptionsBase):
-    input: str = field(
+    inputfile: str = field(
         metadata={"help": "Input file", "positional": True, "metavar": "FILE"},
     )
     verbose: bool = field(
@@ -33,7 +33,7 @@ class Options(ddargparse.OptionsBase):
         metadata={"help": "One or more tags"},
     )
 
-class DoSomethingdOptions(ddargparse.OptionsBase):
+class DoSomethingOptions(ddargparse.OptionsBase):
     threshold: str = field(metadata={"help": "Some threshold"})
 
 parser = ArgumentParser()
@@ -42,7 +42,7 @@ Options.register_cli_args(parser)
 subparsers = parser.add_subparsers(dest="subcommand")
 subparser = subparsers.add_parser("do-something")
 # register dataclass options as argparse subparser arguments
-DoSomethingdOptions.register_cli_args(subparser)
+DoSomethingOptions.register_cli_args(subparser)
 
 args = parser.parse_args()
 # obtain instance of dataclass with global options
