@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/koesterlab/ddargparse/compare/v0.1.2...v0.1.3) (2026-03-20)
+
+
+### Bug Fixes
+
+* do not use pixi cache ([8ed8f83](https://github.com/koesterlab/ddargparse/commit/8ed8f839ca1dbb96418924cb248c4596932b8e02))
+
 ## [0.1.2](https://github.com/koesterlab/ddargparse/compare/v0.1.1...v0.1.2) (2026-03-20)
 
 
