@@ -12,8 +12,15 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def register_cli_args(cls, parser: ArgumentParser) -> None:
-        """Registers command-line arguments based on the dataclass fields."""
+    def register_cli_args(
+        cls, parser: ArgumentParser, list_append: bool = False
+    ) -> None:
+        """Registers command-line arguments based on the dataclass fields.
+
+        Args:
+            parser: An instance of argparse.ArgumentParser to which the arguments will be added.
+            list_append: If True, non-positional list fields will use the 'append' action instead of 'nargs=+'.
+        """
         for cls_field in fields(cls):
 
             def raise_invalid(message: str, cls_field: Field = cls_field) -> Never:
@@ -81,7 +88,10 @@ class OptionsBase:
                 kwargs["default"] = default
                 if field_type is list or get_origin(field_type) is list:
                     kwargs["type"] = get_args(field_type)[0]
-                    kwargs["nargs"] = "+"
+                    if list_append and not positional:
+                        kwargs["action"] = "append"
+                    else:
+                        kwargs["nargs"] = "+"
                 else:
                     kwargs["type"] = arg_type
 

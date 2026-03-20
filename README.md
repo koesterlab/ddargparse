@@ -60,6 +60,7 @@ match args.subcommand:
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
+- Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)`.
 - Seamless integration with standard argparse API.
 - No additional dependencies.
 
