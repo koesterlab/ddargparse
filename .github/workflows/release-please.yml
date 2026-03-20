@@ -34,7 +34,7 @@ jobs:
       - name: Setup pixi
         uses: prefix-dev/setup-pixi@v0
         with:
-          cache: true
+          environments: publish
 
       - name: Build source and wheel distribution + check build
         run: |
