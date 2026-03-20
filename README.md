@@ -1,6 +1,9 @@
 # ddargparse
 
-A small Python library that lets you define command-line argument parsers using dataclasses.
+A small Python library that simplifies command-line argument parsing by leveraging dataclasses.
+It allows developers to define their command-line interfaces using dataclass fields, making the code more concise and easier to maintain.
+With ddargparse, you can easily create complex command-line applications with minimal boilerplate code.
+It puts a particular focus on properly handling type annotations and defaults, minimizing additional required annotation and maintaining interoperability with the standard argparse.
 
 ## Installation
 
@@ -15,10 +18,10 @@ Subclass `OptionsBase` and annotate fields with standard argparse metadata via t
 ```python
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
-from ddargparse import OptionsBase
+import ddargparse
 
 @dataclass
-class Options(OptionsBase):
+class Options(ddargparse.OptionsBase):
     input: str = field(
         metadata={"help": "Input file", "required": True, "metavar": "FILE"},
     )
@@ -41,7 +44,8 @@ options = Options.from_cli_args(args)
 - Declare CLI arguments as typed dataclass fields — no repetitive `add_argument` calls, no need for the `type` argument.
 - Booleans (`store_true` / `store_false`), and list arguments (`nargs="+"`) are inferred automatically from the dataclass field definitions.
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
-- Mark options as required (`"required": True`) or positional (`"positional": True`).
+- Mark options as positional (`"positional": True`).
+- Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
 - No additional dependencies.
 
 ## Requirements
