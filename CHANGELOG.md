@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/koesterlab/ddargparse/compare/v0.1.3...v0.1.4) (2026-03-20)
+
+
+### Documentation
+
+* more examples ([4079f3e](https://github.com/koesterlab/ddargparse/commit/4079f3e31a467434f36ea83f655ff20355d2345e))
+
 ## [0.1.3](https://github.com/koesterlab/ddargparse/compare/v0.1.2...v0.1.3) (2026-03-20)
 
 
