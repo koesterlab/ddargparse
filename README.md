@@ -20,11 +20,9 @@ from ddargparse import OptionsBase
 @dataclass
 class Options(OptionsBase):
     input: str = field(
-        default=None,
         metadata={"help": "Input file", "required": True, "metavar": "FILE"},
     )
     verbose: bool = field(
-        default=False,
         metadata={"help": "Enable verbose output"},
     )
     tags: list[str] = field(
