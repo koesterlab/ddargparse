@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/koesterlab/ddargparse/compare/v0.1.4...v0.2.0) (2026-03-20)
+
+
+### Features
+
+* add ability to choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)` ([0484663](https://github.com/koesterlab/ddargparse/commit/048466323be5dd9195f9e13c1c59b53dce876f05))
+
+
+### Documentation
+
+* more structured usage ([366d34d](https://github.com/koesterlab/ddargparse/commit/366d34dccaffbea111280984d5715076f3a2530f))
+* polish readme ([265fcff](https://github.com/koesterlab/ddargparse/commit/265fcff2c4ecb164bdcbb24357a420ca0054556d))
+
 ## [0.1.4](https://github.com/koesterlab/ddargparse/compare/v0.1.3...v0.1.4) (2026-03-20)
 
 
