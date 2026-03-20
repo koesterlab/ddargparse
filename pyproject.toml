@@ -2,6 +2,8 @@
 authors = [{name = "Johannes Koester", email = "johannes.koester@uni-due.de"}]
 description = "Dataclass driven argparse handling"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = []
 name = "ddargparse"
 requires-python = ">= 3.11"

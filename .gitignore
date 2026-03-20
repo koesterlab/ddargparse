@@ -1,3 +1,10 @@
 # pixi environments
-.pixi/*
+.pixi
 !.pixi/config.toml
+/.coverage
+/coverage-report
+/dist
+__pycache__
+.vscode
+.ruff_cache
+.pytest_cache
