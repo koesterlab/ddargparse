@@ -7,7 +7,7 @@ license-files = ["LICENSE"]
 dependencies = []
 name = "ddargparse"
 requires-python = ">= 3.11"
-version = "0.1.0"
+version = "0.1.1"
 
 [project.urls]
 repository = "https://github.com/koesterlab/ddargparse"
