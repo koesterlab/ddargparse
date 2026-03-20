@@ -247,7 +247,7 @@ packages:
 - pypi: ./
   name: ddargparse
   version: 0.1.0
-  sha256: 4fc94afefa6d77f52b7a2f778800def3101782bdb7980bd47f369771799e809b
+  sha256: abb98f1f446998e839cb2ca2ca87a9c782703d451a20df925e604da311a6304f
   requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
   name: docutils
