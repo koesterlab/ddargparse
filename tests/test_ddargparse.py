@@ -1,5 +1,6 @@
 """Tests for ddargparse.OptionsBase."""
 
+from enum import Enum
 import pytest
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
@@ -99,6 +100,25 @@ class CustomParseOptions(OptionsBase):
     def parse_pair(cls, value: str):
         key, _, val = value.partition(":")
         return (key, val)
+
+
+class DummyEnum(Enum):
+    ALPHA = 0
+    BETA = 1
+    GAMMA = 2
+
+
+@dataclass
+class EnumOptions(OptionsBase):
+    mode: DummyEnum | None = field(metadata={"help": "An enum value"})
+    mode2: DummyEnum = field(
+        default=DummyEnum.ALPHA, metadata={"help": "Another enum value"}
+    )
+
+
+@dataclass
+class InvalidEnumDefaultOptions(OptionsBase):
+    mode: DummyEnum = field(default=42, metadata={"help": "An enum value"})  # type: ignore
 
 
 # ---------------------------------------------------------------------------
@@ -210,8 +230,11 @@ class TestListOptions:
         assert all(isinstance(c, int) for c in opts.counts)
 
     def test_list_append(self):
-        opts = parse(ListOptions, ["--tags", "alpha", "--tags", "beta"], list_append=True)
+        opts = parse(
+            ListOptions, ["--tags", "alpha", "--tags", "beta"], list_append=True
+        )
         assert opts.tags == ["alpha", "beta"]
+
 
 # ---------------------------------------------------------------------------
 # Tests: positional arguments
@@ -287,3 +310,25 @@ class TestCustomParseOptions:
     def test_custom_parser_empty_value(self):
         opts = parse(CustomParseOptions, ["--pair", "key:"])
         assert opts.pair == ("key", "")
+
+
+class TestEnumOptions:
+    def test_parsing(self):
+        opts = parse(EnumOptions, ["--mode", "beta"])
+        assert opts.mode == DummyEnum.BETA
+
+    def test_default(self):
+        opts = parse(EnumOptions, [])
+        assert opts.mode is None
+        assert opts.mode2 == DummyEnum.ALPHA
+
+    def test_invalid_default(self):
+        with pytest.raises(
+            ValueError, match="Default value must be an instance of the enum."
+        ):
+            make_parser(InvalidEnumDefaultOptions)
+
+    def test_invalid_choice(self):
+        parser = make_parser(EnumOptions)
+        with pytest.raises(SystemExit):
+            parser.parse_args(["--mode", "delta"])

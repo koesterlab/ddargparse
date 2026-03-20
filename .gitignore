@@ -8,4 +8,4 @@ __pycache__
 .vscode
 .ruff_cache
 .pytest_cache
-.pixi.lock
+pixi.lock

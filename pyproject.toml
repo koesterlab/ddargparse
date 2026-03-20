@@ -6,7 +6,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 dependencies = []
 name = "ddargparse"
-requires-python = ">= 3.11"
+requires-python = ">= 3.12"
 version = "0.1.4"
 
 [project.urls]

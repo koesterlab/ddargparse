@@ -38,6 +38,7 @@ class Options(ddargparse.OptionsBase):
 @dataclass
 class DoSomethingOptions(ddargparse.OptionsBase):
     threshold: str = field(metadata={"help": "Some threshold"})
+    mode: SomeMode = field(default=SomeMode.DEFAULT, metadata={"help": "Mode to be used"})
 ```
 
 ### Step 2: CLI argument parser declaration
@@ -66,12 +67,13 @@ match args.subcommand:
 
 ## Features
 
-- Declare CLI arguments as typed dataclass fields — no repetitive `add_argument` calls, no need for the `type` argument.
+- Declare CLI arguments as typed dataclass fields — no repetitive `add_argument` calls, no need for the `type` argument. Automatic convertion of field names into kebab-case CLI arguments.
 - Booleans (`store_true` / `store_false`), and list arguments (`nargs="+"`) are inferred automatically from the dataclass field definitions.
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
 - Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)`.
+- Proper support for enums: simply specify an enum type and ddargparse handles ensures that proper (lower, kebab-cased) choices are inferred from the enum item names and the correct type is returned.
 - Seamless integration with standard argparse API.
 - No additional dependencies.
 
