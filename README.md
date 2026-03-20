@@ -23,7 +23,7 @@ import ddargparse
 @dataclass
 class Options(ddargparse.OptionsBase):
     input: str = field(
-        metadata={"help": "Input file", "required": True, "metavar": "FILE"},
+        metadata={"help": "Input file", "positional": True, "metavar": "FILE"},
     )
     verbose: bool = field(
         metadata={"help": "Enable verbose output"},
@@ -33,10 +33,24 @@ class Options(ddargparse.OptionsBase):
         metadata={"help": "One or more tags"},
     )
 
+class DoSomethingdOptions(ddargparse.OptionsBase):
+    threshold: str = field(metadata={"help": "Some threshold"})
+
 parser = ArgumentParser()
+# register dataclass options as argparse parser arguments
 Options.register_cli_args(parser)
+subparsers = parser.add_subparsers(dest="subcommand")
+subparser = subparsers.add_parser("do-something")
+# register dataclass options as argparse subparser arguments
+DoSomethingdOptions.register_cli_args(subparser)
+
 args = parser.parse_args()
+# obtain instance of dataclass with global options
 options = Options.from_cli_args(args)
+match args.subcommand:
+    case "do-something":
+        # obtain instance of dataclass with subcommand options
+        do_something_options = DoSomethingOptions.from_cli_args(args)
 ```
 
 ## Features
@@ -46,6 +60,8 @@ options = Options.from_cli_args(args)
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
+- Pass arbitrary argparse argument options via `field(metadata={...})`.
+- Seamless integration with standard argparse API.
 - No additional dependencies.
 
 ## Requirements
