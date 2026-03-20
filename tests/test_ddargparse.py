@@ -12,17 +12,17 @@ from ddargparse import OptionsBase
 # ---------------------------------------------------------------------------
 
 
-def make_parser(*option_classes):
+def make_parser(*option_classes, list_append: bool = False) -> ArgumentParser:
     """Build an ArgumentParser with all given OptionsBase subclasses registered."""
     parser = ArgumentParser()
     for cls in option_classes:
-        cls.register_cli_args(parser)
+        cls.register_cli_args(parser, list_append=list_append)
     return parser
 
 
-def parse(option_class, argv: list[str]):
+def parse(option_class, argv: list[str], list_append: bool = False):
     """Register, parse, and return an options instance from a argv list."""
-    parser = make_parser(option_class)
+    parser = make_parser(option_class, list_append=list_append)
     return option_class.from_cli_args(parser.parse_args(argv))
 
 
@@ -209,6 +209,9 @@ class TestListOptions:
         assert opts.counts == [1, 2, 3]
         assert all(isinstance(c, int) for c in opts.counts)
 
+    def test_list_append(self):
+        opts = parse(ListOptions, ["--tags", "alpha", "--tags", "beta"], list_append=True)
+        assert opts.tags == ["alpha", "beta"]
 
 # ---------------------------------------------------------------------------
 # Tests: positional arguments
