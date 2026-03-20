@@ -60,7 +60,6 @@ match args.subcommand:
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
-- Pass arbitrary argparse argument options via `field(metadata={...})`.
 - Seamless integration with standard argparse API.
 - No additional dependencies.
 
