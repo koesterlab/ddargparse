@@ -1,3 +1,4 @@
+from typing import Sequence
 from typing import Iterable
 from ddargparse.common import _raise_invalid
 from ddargparse.enums import EnumArgTypeHandler
@@ -18,7 +19,7 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(cls, args: list[str], list_append: bool = False) -> Self:
+    def parse_args(cls, args: Sequence[str] | None, list_append: bool = False) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass."""
 
         parser = ArgumentParser(description=cls.__doc__)
@@ -62,7 +63,7 @@ class OptionsBase:
 
             if (
                 origin_type is not None
-                and issubclass(origin_type, Union)
+                and origin_type is Union
                 and type(None) in get_args(field_type)
             ):
                 is_optional = True
