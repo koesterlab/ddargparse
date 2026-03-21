@@ -20,6 +20,7 @@ requires = ["hatchling"]
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
 platforms = ["linux-64"]
+requires-pixi = ">=0.63"
 
 [tool.pixi.pypi-dependencies]
 ddargparse = { path = ".", editable = true }
@@ -39,11 +40,11 @@ pytest-cov = ">=6.0.0,<7"
 pyrefly = ">=0.52.0,<0.53"
 
 [tool.pixi.feature.dev.tasks]
-format = "ruff format"
-lint = "ruff check"
-typecheck = "pyrefly check"
-qc = { depends-on = ["format", "lint"] }
-coverage-report = "coverage report -m"
+format = {cmd = "ruff format", default-environment = "dev"}
+lint = {cmd = "ruff check", default-environment = "dev"}
+typecheck = {cmd = "pyrefly check", default-environment = "dev"}
+qc = { depends-on = ["format", "lint", "typecheck"] }
+coverage-report = {cmd = "coverage report -m", default-environment = "dev"}
 
 [tool.pixi.feature.dev.tasks.test]
 cmd = [
