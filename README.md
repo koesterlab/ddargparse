@@ -1,4 +1,4 @@
-# ddargparse
+# ddargparse - dataclass driven argparse
 
 [![test coverage: 100%](https://img.shields.io/badge/test%20coverage-100%25-green)](https://github.com/koesterlab/ddargparse/blob/main/pyproject.toml#L58)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/koesterlab/ddargparse/ci.yml?branch=main)
