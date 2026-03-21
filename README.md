@@ -13,9 +13,11 @@ pip install ddargparse
 
 ## Usage
 
+### Mode a: argparse + dataclasses
+
 Subclass `OptionsBase` and annotate fields with standard argparse metadata via the `dataclasses.field` function (`help`, `required`, `positional`, `metavar`). Then call `register_cli_args` to populate an `ArgumentParser` and `from_cli_args` to instantiate your options from the parsed result.
 
-### Step 1: Option dataclass definition
+#### Step 1: Option dataclass definition
 
 ```python
 from argparse import ArgumentParser
@@ -41,7 +43,7 @@ class DoSomethingOptions(ddargparse.OptionsBase):
     mode: SomeMode = field(default=SomeMode.DEFAULT, metadata={"help": "Mode to be used"})
 ```
 
-### Step 2: CLI argument parser declaration
+#### Step 2: CLI argument parser declaration
 
 ```python
 parser = ArgumentParser()
@@ -53,7 +55,7 @@ subparser = subparsers.add_parser("do-something")
 DoSomethingOptions.register_cli_args(subparser)
 ```
 
-### Step 3: CLI argument parsing and option dataclass instantiation
+#### Step 3: CLI argument parsing and option dataclass instantiation
 
 ```python
 args = parser.parse_args()
@@ -64,6 +66,56 @@ match args.subcommand:
         # obtain instance of dataclass with subcommand options
         do_something_options = DoSomethingOptions.from_cli_args(args)
 ```
+
+### Mode b: dataclass only
+
+In this mode, control over argparse is handed over to ddargparse entirely and happening under the hood.
+The advantage is that subcommands can be expressed implicitly in the dataclass hierarchy.
+
+#### Step 1: Option and subcommand dataclass definition
+
+```python
+from argparse import ArgumentParser
+from dataclasses import dataclass, field
+import ddargparse
+
+@dataclass
+class Options(ddargparse.OptionsBase):
+    "The docstring is used as description in the CLI interface"
+
+    inputfile: str = field(
+        metadata={"help": "Input file", "positional": True, "metavar": "FILE"},
+    )
+    verbose: bool = field(
+        metadata={"help": "Enable verbose output"},
+    )
+    tags: list[str] = field(
+        default_factory=list,
+        metadata={"help": "One or more tags"},
+    )
+    subcommand_do_something: DoSomethingOptions | None
+
+@dataclass
+class DoSomethingOptions(ddargparse.OptionsBase):
+    """This is the subcommand description
+    
+    The first line of the subcommand is used as short help, while the full description
+    is displayed upon "mytool do-something --help"
+    """
+
+    threshold: str = field(metadata={"help": "Some threshold"})
+    mode: SomeMode = field(default=SomeMode.DEFAULT, metadata={"help": "Mode to be used"})
+```
+
+#### Step 3: CLI argument parsing and option dataclass instantiation
+
+```python
+# Obtain the entire hierarchy of options, including automatic determination of the
+# selected subcommand and its options.
+options = Options.parse_args()
+```
+
+
 
 ## Features
 

@@ -66,20 +66,7 @@ jobs:
           environments: dev
           cache: false
 
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          channels: conda-forge,nodefaults
-
-      - name: Deploy external test env
-        shell: bash -el {0}
-        run: |
-          conda create -n test-env stress-ng
-          conda create -p $TEST_ENV_DIR stress-ng
-
       - name: Run pytest
-        env:
-          TEST_NAMED_ENV: "1"
-          TEST_DIRECTORY_ENV: "1"
         run: pixi run test -v
 
       - name: Run Coverage
