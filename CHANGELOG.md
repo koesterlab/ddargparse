@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/koesterlab/ddargparse/compare/v0.3.1...v0.3.2) (2026-03-21)
+
+
+### Bug Fixes
+
+* parse_args taking only optional parameters now ([7c6d371](https://github.com/koesterlab/ddargparse/commit/7c6d3715303986a031d0e6931907887db3bfe2e6))
+
 ## [0.3.1](https://github.com/koesterlab/ddargparse/compare/v0.3.0...v0.3.1) (2026-03-21)
 
 
