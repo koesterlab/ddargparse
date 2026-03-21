@@ -30,7 +30,7 @@ class SubcommandHandler:
         else:
             return docstring
 
-    def subcommand_options_cls(self) -> OptionsBase:
+    def subcommand_options_cls(self) -> type[OptionsBase]:
         union_handler = UnionHandler(self.field)
         if not union_handler.is_union() or not union_handler.union_contains_none():
             self.raise_invalid(
@@ -39,7 +39,7 @@ class SubcommandHandler:
             )
 
         cls = union_handler.union_single_non_none_type()
-        assert isinstance(cls, OptionsBase)
+        assert issubclass(cls, OptionsBase)
         return cls
 
     def raise_invalid(self, message: str) -> None:
