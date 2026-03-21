@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/koesterlab/ddargparse/compare/v0.2.0...v0.3.0) (2026-03-21)
+
+
+### Features
+
+* dataclass-only mode ([#7](https://github.com/koesterlab/ddargparse/issues/7)) ([f1808b2](https://github.com/koesterlab/ddargparse/commit/f1808b262a90432de10b173dc9bfc0d619980474))
+* proper handling of Enum types ([7cb3bc6](https://github.com/koesterlab/ddargparse/commit/7cb3bc6a6e778035a494c697d658d5fafa5e8426))
+
 ## [0.2.0](https://github.com/koesterlab/ddargparse/compare/v0.1.4...v0.2.0) (2026-03-20)
 
 
