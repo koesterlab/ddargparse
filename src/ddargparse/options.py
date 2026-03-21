@@ -19,7 +19,7 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(cls, args: Sequence[str] | None, list_append: bool = False) -> Self:
+    def parse_args(cls, args: Sequence[str] | None = None, list_append: bool = False) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass."""
 
         parser = ArgumentParser(description=cls.__doc__)

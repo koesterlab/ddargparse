@@ -99,6 +99,12 @@ class Options(ddargparse.OptionsBase):
     )
     subcommand_do_something: DoSomethingOptions | None
 
+
+class SomeMode(Enum):
+    DEFAULT = 0
+    FAST = 1
+
+
 @dataclass
 class DoSomethingOptions(ddargparse.OptionsBase):
     """This is the subcommand description
