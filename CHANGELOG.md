@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/koesterlab/ddargparse/compare/v0.3.0...v0.3.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* improve compat with older python versions and fix parse_args signature ([0dd6e29](https://github.com/koesterlab/ddargparse/commit/0dd6e29e3a7bfcfbb8df5cd168ee7027f92e0681))
+
 ## [0.3.0](https://github.com/koesterlab/ddargparse/compare/v0.2.0...v0.3.0) (2026-03-21)
 
 
