@@ -1,16 +1,9 @@
-"""Tests for ddargparse.OptionsBase."""
-
 from enum import Enum
 import pytest
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
 
 from ddargparse import OptionsBase
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def make_parser(*option_classes, list_append: bool = False) -> ArgumentParser:
@@ -27,13 +20,13 @@ def parse(option_class, argv: list[str], list_append: bool = False):
     return option_class.from_cli_args(parser.parse_args(argv))
 
 
-# ---------------------------------------------------------------------------
-# Fixtures / shared option dataclasses
-# ---------------------------------------------------------------------------
-
-
 @dataclass
 class SimpleOptions(OptionsBase):
+    """The CLI description
+
+    Some additonal line of description.
+    """
+
     name: str | None = field(metadata={"help": "A name"})
     count: int = field(default=0, metadata={"help": "A count"})
 
@@ -92,6 +85,10 @@ class MetavarOptions(OptionsBase):
     path: str | None = field(metadata={"help": "A path", "metavar": "PATH"})
 
 
+# patch docstring to increase test coverage
+MetavarOptions.__doc__ = None
+
+
 @dataclass
 class CustomParseOptions(OptionsBase):
     pair: str | None = field(metadata={"help": "A key:value pair"})
@@ -121,9 +118,28 @@ class InvalidEnumDefaultOptions(OptionsBase):
     mode: DummyEnum = field(default=42, metadata={"help": "An enum value"})  # type: ignore
 
 
-# ---------------------------------------------------------------------------
-# Tests: optional flags and defaults
-# ---------------------------------------------------------------------------
+@dataclass
+class PureDataclassOptions(OptionsBase):
+    """The CLI description
+
+    Some additonal line of description.
+    """
+
+    value: str = field(metadata={"help": "A value"})
+    do_foo: SimpleOptions | None
+    do_bar: MetavarOptions | None
+
+
+@dataclass
+class PureDataclassInvalidSubcommandOptions(OptionsBase):
+    """The CLI description
+
+    Some additonal line of description.
+    """
+
+    value: str = field(metadata={"help": "A value"})
+    do_foo: SimpleOptions | None
+    do_bar: MetavarOptions
 
 
 class TestSimpleOptions:
@@ -158,11 +174,6 @@ class TestMultiTypeOptions:
             make_parser(MultiTypeOptions)
 
 
-# ---------------------------------------------------------------------------
-# Tests: required flags
-# ---------------------------------------------------------------------------
-
-
 class TestRequiredOptions:
     def test_required_flag_provided(self):
         opts = parse(RequiredOptions, ["--output", "out.txt"])
@@ -172,11 +183,6 @@ class TestRequiredOptions:
         parser = make_parser(RequiredOptions)
         with pytest.raises(SystemExit):
             parser.parse_args([])
-
-
-# ---------------------------------------------------------------------------
-# Tests: boolean flags
-# ---------------------------------------------------------------------------
 
 
 class TestBoolOptions:
@@ -205,11 +211,6 @@ class TestBoolOptions:
             make_parser(BoolOptionsInvalidDefault)
 
 
-# ---------------------------------------------------------------------------
-# Tests: list arguments
-# ---------------------------------------------------------------------------
-
-
 class TestListOptions:
     def test_defaults(self):
         opts = parse(ListOptions, [])
@@ -236,11 +237,6 @@ class TestListOptions:
         assert opts.tags == ["alpha", "beta"]
 
 
-# ---------------------------------------------------------------------------
-# Tests: positional arguments
-# ---------------------------------------------------------------------------
-
-
 class TestPositionalOptions:
     def test_positional(self):
         opts = parse(PositionalOptions, ["myfile.txt"])
@@ -265,11 +261,6 @@ class TestPositionalOptionalOptions:
             make_parser(PositionalOptionalOptions)
 
 
-# ---------------------------------------------------------------------------
-# Tests: underscore → hyphen conversion
-# ---------------------------------------------------------------------------
-
-
 class TestUnderscoreOptions:
     def test_hyphenated_flag_accepted(self):
         opts = parse(UnderscoreOptions, ["--input-file", "data.csv"])
@@ -281,11 +272,6 @@ class TestUnderscoreOptions:
             parser.parse_args(["--input_file", "data.csv"])
 
 
-# ---------------------------------------------------------------------------
-# Tests: metavar
-# ---------------------------------------------------------------------------
-
-
 class TestMetavarOptions:
     def test_metavar_in_help(self):
         parser = make_parser(MetavarOptions)
@@ -295,11 +281,6 @@ class TestMetavarOptions:
     def test_value_parsed(self):
         opts = parse(MetavarOptions, ["--path", "/tmp/foo"])
         assert opts.path == "/tmp/foo"
-
-
-# ---------------------------------------------------------------------------
-# Tests: custom parse method
-# ---------------------------------------------------------------------------
 
 
 class TestCustomParseOptions:
@@ -332,3 +313,21 @@ class TestEnumOptions:
         parser = make_parser(EnumOptions)
         with pytest.raises(SystemExit):
             parser.parse_args(["--mode", "delta"])
+
+
+class TestPureDataclassMode:
+    def test_subcommands(self):
+        options = PureDataclassOptions.parse_args(
+            ["--value", "test", "do-foo", "--name", "alice", "--count", "5"]
+        )
+        assert options.value == "test"
+        assert options.do_foo is not None
+        assert options.do_foo.name == "alice"
+        assert options.do_foo.count == 5
+        assert options.do_bar is None
+
+    def test_invalid_subcommand(self):
+        with pytest.raises(ValueError, match="Subcommand fields must be optional"):
+            PureDataclassInvalidSubcommandOptions.parse_args(
+                ["--value", "test", "do-bar", "--name", "alice", "--count", "5"]
+            )
