@@ -1,7 +1,6 @@
+from ddargparse.unions import UnionHandler
 from inspect import isclass
 from ddargparse.options import _raise_invalid
-from typing import get_args
-from typing import Union
 from dataclasses import dataclass, Field
 from ddargparse.options import OptionsBase
 
@@ -11,8 +10,9 @@ class SubcommandHandler:
     field: Field
 
     def is_subcommand_candidate(self) -> bool:
-        if isinstance(self.field.type, Union):
-            cls = get_args(self.field.type)[0]
+        union_handler = UnionHandler(self.field)
+        if union_handler.is_union() and union_handler.union_contains_none():
+            cls = union_handler.union_single_non_none_type()
         else:
             cls = self.field.type
         return isclass(cls) and issubclass(cls, OptionsBase)
@@ -31,16 +31,16 @@ class SubcommandHandler:
             return docstring
 
     def subcommand_options_cls(self) -> OptionsBase:
-        subcommand_cls = self.field.type
-        if not isinstance(subcommand_cls, Union) or get_args(subcommand_cls)[
-            1
-        ] is not type(None):
+        union_handler = UnionHandler(self.field)
+        if not union_handler.is_union() or not union_handler.union_contains_none():
             self.raise_invalid(
                 "Subcommand fields must be optional (e.g. subcommand_something: "
                 "SubcommandOptions | None)."
             )
 
-        return get_args(subcommand_cls)[0]
+        cls = union_handler.union_single_non_none_type()
+        assert isinstance(cls, OptionsBase)
+        return cls
 
     def raise_invalid(self, message: str) -> None:
         _raise_invalid(message, cls_field=self.field)

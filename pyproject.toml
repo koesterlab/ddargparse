@@ -27,6 +27,10 @@ ddargparse = { path = ".", editable = true }
 [tool.pixi.environments]
 dev = { features = ["dev"] }
 publish = { features = ["publish"] }
+minpy = { features = ["minpy", "dev"] }
+
+[tool.pixi.feature.minpy.dependencies]
+python = "3.12.*"
 
 [tool.pixi.feature.dev.pypi-dependencies]
 pytest = ">=8.3.5,<9"

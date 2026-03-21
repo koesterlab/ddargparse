@@ -169,7 +169,8 @@ class TestSimpleOptions:
 class TestMultiTypeOptions:
     def test_make_parser(self):
         with pytest.raises(
-            ValueError, match="Union types are only allowed for single types with None"
+            ValueError,
+            match="Union types with None are only allowed for single types with None",
         ):
             make_parser(MultiTypeOptions)
 

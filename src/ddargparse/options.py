@@ -1,3 +1,4 @@
+from ddargparse.unions import UnionHandler
 from typing import Sequence
 from typing import Iterable
 from ddargparse.common import _raise_invalid
@@ -8,7 +9,6 @@ from enum import Enum
 from functools import partial
 from dataclasses import Field
 import dataclasses
-from typing import Union
 from dataclasses import dataclass, fields
 from argparse import ArgumentParser, Namespace
 from typing import Self, get_args, get_origin
@@ -59,22 +59,11 @@ class OptionsBase:
             parse_method = getattr(cls, f"parse_{cls_field.name}", None)
             field_type = cls_field.type
 
-            origin_type = get_origin(field_type)
+            union_handler = UnionHandler(cls_field)
 
-            if (
-                origin_type is not None
-                and origin_type is Union
-                and type(None) in get_args(field_type)
-            ):
+            if union_handler.is_union() and union_handler.union_contains_none():
                 is_optional = True
-                field_type = [t for t in get_args(field_type) if t is not type(None)]
-                if len(field_type) > 1:
-                    raise_invalid(
-                        "Union types are only allowed for single types "
-                        "with None (e.g. str | None)."
-                    )
-                else:
-                    field_type = field_type[0]
+                field_type = union_handler.union_single_non_none_type()
             else:
                 is_optional = False
 
@@ -89,7 +78,7 @@ class OptionsBase:
                 default = cls_field.default
 
             kwargs = {
-                "help": cls_field.metadata["help"],
+                "help": cls_field.metadata.get("help"),
             }
             if is_optional:
                 if positional:
