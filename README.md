@@ -107,11 +107,13 @@ class DoSomethingOptions(ddargparse.OptionsBase):
     mode: SomeMode = field(default=SomeMode.DEFAULT, metadata={"help": "Mode to be used"})
 ```
 
-#### Step 3: CLI argument parsing and option dataclass instantiation
+#### Step 2: CLI argument parsing and option dataclass instantiation
+
+Then, the entire hierarchy of options, including automatic determination of the
+selected subcommand and its options can be obtained via calling `parse_args()` on the
+top-level `Options` class.
 
 ```python
-# Obtain the entire hierarchy of options, including automatic determination of the
-# selected subcommand and its options.
 options = Options.parse_args()
 ```
 
@@ -124,9 +126,9 @@ options = Options.parse_args()
 - Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
-- Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)`.
+- Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)` or `parse_args(list_append=True|False)`.
 - Proper support for enums: simply specify an enum type and ddargparse handles ensures that proper (lower, kebab-cased) choices are inferred from the enum item names and the correct type is returned.
-- Seamless integration with standard argparse API.
+- Seamless integration with standard argparse API or dataclass only modes that hides all technical details of the argument parsing.
 - No additional dependencies.
 
 ## Requirements
