@@ -1,5 +1,9 @@
 # ddargparse
 
+[![test coverage: 100%](https://img.shields.io/badge/test%20coverage-100%25-green)](https://github.com/koesterlab/ddargparse/blob/main/pyproject.toml#L58)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/koesterlab/ddargparse/ci.yml?branch=main)
+![PyPI](https://img.shields.io/pypi/v/ddargparse)
+
 A small Python library that simplifies command-line argument parsing by leveraging dataclasses.
 It allows developers to define their command-line interfaces using dataclass fields, making the code more concise and easier to maintain.
 With ddargparse, you can easily create complex command-line applications with minimal boilerplate code.
