@@ -1,3 +1,8 @@
+from ddargparse.custom_defaults import CustomDefaultsHandler
+from typing import Callable
+from enum import StrEnum
+from typing import Any
+from typing import Mapping
 from ddargparse.unions import UnionHandler
 from typing import Sequence
 from typing import Iterable
@@ -14,19 +19,24 @@ from argparse import ArgumentParser, Namespace
 from typing import Self, get_args, get_origin
 
 
+class FieldSourceType(StrEnum):
+    CLI_ARG = "cli_arg"
+    CUSTOM_DEFAULT = "custom_default"
+
+
 @dataclass
 class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(cls, args: Sequence[str] | None = None, list_append: bool = False) -> Self:
+    def parse_args(cls, args: Sequence[str] | None = None, custom_defaults: Sequence[Mapping[str, Any]] | None = None, list_append: bool = False) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass."""
 
         parser = ArgumentParser(description=cls.__doc__)
         cls._managed_register_cli_args(parser, list_append=list_append)
 
         parsed_args = parser.parse_args(args)
-        options = cls._from_cli_args(parsed_args, handle_subcommands=True)
+        options = cls._from_cli_args(parsed_args, custom_defaults=custom_defaults, handle_subcommands=True)
 
         return options
 
@@ -37,6 +47,17 @@ class OptionsBase:
         cls._register_cli_args(
             parser, list_append=list_append, ignore_subcommand_fields=False
         )
+
+    @classmethod
+    def _get_parse_method(cls, field_name: str, source_type: FieldSourceType) -> Callable | None:
+        """Returns a custom parsing function for a given field, if defined."""
+        name = f"parse_{source_type}_{field_name}"
+        parse_method = getattr(cls, name, None)
+        if parse_method is not None and not callable(parse_method):
+            _raise_invalid(
+                f"Attribute {name} is taken in {cls} but has to be a method that parses a given {source_type.replace('_', '')}.",
+            )
+        return parse_method
 
     @classmethod
     def _register_cli_args(
@@ -56,7 +77,7 @@ class OptionsBase:
 
             arg_name = cls_field.name.replace("_", "-")
 
-            parse_method = getattr(cls, f"parse_{cls_field.name}", None)
+            parse_method = cls._get_parse_method(cls_field.name, FieldSourceType.CLI_ARG)
             field_type = cls_field.type
 
             union_handler = UnionHandler(cls_field)
@@ -139,10 +160,13 @@ class OptionsBase:
     @classmethod
     def from_cli_args(cls, args: Namespace) -> Self:
         """Creates an instance of the dataclass from the parsed command-line arguments."""
-        return cls._from_cli_args(args, handle_subcommands=False)
+        return cls._from_cli_args(args, custom_defaults=None, handle_subcommands=False)
 
     @classmethod
-    def _from_cli_args(cls, args: Namespace, handle_subcommands: bool) -> Self:
+    def _from_cli_args(cls, args: Namespace, custom_defaults: Sequence[Mapping[str, Any]] | None, handle_subcommands: bool) -> Self:
+        if custom_defaults is not None:
+            resolved_custom_defaults = CustomDefaultsHandler(custom_defaults=custom_defaults, options_cls=cls).resolve()
+
         kwargs = {
             cls_field.name: getattr(args, cls_field.name)
             for cls_field in cls._cli_arg_fields(
