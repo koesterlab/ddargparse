@@ -17,7 +17,7 @@ def make_parser(*option_classes, list_append: bool = False) -> ArgumentParser:
 def parse(option_class, argv: list[str], list_append: bool = False):
     """Register, parse, and return an options instance from a argv list."""
     parser = make_parser(option_class, list_append=list_append)
-    return option_class.from_cli_args(parser.parse_args(argv))
+    return option_class.from_parsed_cli_args(parser.parse_args(argv))
 
 
 @dataclass
@@ -350,7 +350,7 @@ class TestEnumOptions:
 
 class TestPureDataclassMode:
     def test_subcommands(self):
-        options = PureDataclassOptions.parse_args(
+        options = PureDataclassOptions.from_cli_args(
             ["--value", "test", "do-foo", "--name", "alice", "--count", "5"]
         )
         assert options.value == "test"
@@ -361,6 +361,6 @@ class TestPureDataclassMode:
 
     def test_invalid_subcommand(self):
         with pytest.raises(ValueError, match="Subcommand fields must be optional"):
-            PureDataclassInvalidSubcommandOptions.parse_args(
+            PureDataclassInvalidSubcommandOptions.from_cli_args(
                 ["--value", "test", "do-bar", "--name", "alice", "--count", "5"]
             )

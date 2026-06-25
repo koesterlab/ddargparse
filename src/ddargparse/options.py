@@ -12,7 +12,7 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(
+    def from_cli_args(
         cls, args: Sequence[str] | None = None, list_append: bool = False
     ) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass.
@@ -38,7 +38,7 @@ class OptionsBase:
         )
 
     @classmethod
-    def from_cli_args(cls, args: Namespace) -> Self:
+    def from_parsed_cli_args(cls, args: Namespace) -> Self:
         """Creates an instance of the dataclass from the parsed command-line arguments.
         Each subcommand-representing dataclass has to be handled explicitly via
         this method.
