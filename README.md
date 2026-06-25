@@ -133,7 +133,7 @@ options = Options.parse_args()
 
 - Declare CLI arguments as typed dataclass fields — no repetitive `add_argument` calls, no need for the `type` argument. Automatic convertion of field names into kebab-case CLI arguments.
 - Booleans (`store_true` / `store_false`), and list arguments (`nargs="+"`) are inferred automatically from the dataclass field definitions.
-- Custom parse methods: define a `parse_<field_name>` classmethod to override the argument type converter.
+- Custom parse methods: define a `parse_<field_name>(cls, value: str)` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
 - Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)` or `parse_args(list_append=True|False)`.

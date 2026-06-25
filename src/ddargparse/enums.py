@@ -1,3 +1,6 @@
+from dataclasses import Field
+from ddargparse.common import _raise_invalid
+from typing import Callable
 from enum import Enum
 from dataclasses import dataclass
 
@@ -27,11 +30,21 @@ class EnumHandler[E: Enum]:
 
 @dataclass(frozen=True)
 class EnumArgTypeHandler[E: Enum]:
-    name: str
+    cls_field: Field
     enum_handler: EnumHandler[E]
+    custom_parse_method: Callable | None
 
     def __call__(self, choice: str) -> E:
+        if self.custom_parse_method is not None:
+            parsed = self.custom_parse_method(choice)
+            if not isinstance(parsed, self.enum_handler.enum_cls):
+                raise _raise_invalid(
+                    "Custom parse method returned non-enum type "
+                    f"{type(parsed)} instead of {E}",
+                    self.cls_field,
+                )
+            return parsed
         return self.enum_handler.choice_to_item(choice)
 
     def __repr__(self) -> str:
-        return self.name
+        return self.cls_field.name

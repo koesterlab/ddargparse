@@ -119,6 +119,26 @@ class InvalidEnumDefaultOptions(OptionsBase):
 
 
 @dataclass
+class EnumOptionsParseMethod(OptionsBase):
+    mode: DummyEnum | None
+
+    @classmethod
+    def parse_mode(cls, value: str):
+        match value:
+            case "custom-alpha":
+                return DummyEnum.ALPHA
+            case "custom-beta":
+                return "somewrongvalue"
+            case _:
+                raise ValueError()
+
+
+@dataclass
+class InvalidTypeOptions(OptionsBase):
+    some: "bool" = False
+
+
+@dataclass
 class PureDataclassOptions(OptionsBase):
     """The CLI description
 
@@ -164,6 +184,10 @@ class TestSimpleOptions:
         opts = parse(SimpleOptions, ["--name", "bob", "--count", "3"])
         assert opts.name == "bob"
         assert opts.count == 3
+
+    def test_invalid_type(self):
+        with pytest.raises(ValueError, match="Field types may not be given as"):
+            make_parser(InvalidTypeOptions)
 
 
 class TestMultiTypeOptions:
@@ -295,6 +319,10 @@ class TestCustomParseOptions:
 
 
 class TestEnumOptions:
+    def test_custom_parse_method(self):
+        opts = parse(EnumOptionsParseMethod, ["--mode", "custom-alpha"])
+        assert opts.mode == DummyEnum.ALPHA
+
     def test_parsing(self):
         opts = parse(EnumOptions, ["--mode", "beta"])
         assert opts.mode == DummyEnum.BETA
@@ -314,6 +342,10 @@ class TestEnumOptions:
         parser = make_parser(EnumOptions)
         with pytest.raises(SystemExit):
             parser.parse_args(["--mode", "delta"])
+
+    def test_custom_parse_method_invalid_type(self):
+        with pytest.raises(SystemExit):
+            parse(EnumOptionsParseMethod, ["--mode", "custom-beta"])
 
 
 class TestPureDataclassMode:
