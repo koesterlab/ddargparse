@@ -12,10 +12,12 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(
+    def from_cli_args(
         cls, args: Sequence[str] | None = None, list_append: bool = False
     ) -> Self:
-        """Parses command-line arguments and returns an instance of the dataclass."""
+        """Parses command-line arguments and returns an instance of the dataclass.
+        This approach includes automatic subcommand handling (see docs).
+        """
 
         parser = ArgumentParser(description=cls.__doc__)
         cls._managed_register_cli_args(parser, list_append=list_append)
@@ -29,9 +31,19 @@ class OptionsBase:
     def register_cli_args(
         cls, parser: ArgumentParser, list_append: bool = False
     ) -> None:
+        """Register CLI args in a given argument parser.
+        Subcommands have to be modeled explicitly in the argument parser."""
         cls._register_cli_args(
             parser, list_append=list_append, ignore_subcommand_fields=False
         )
+
+    @classmethod
+    def from_parsed_cli_args(cls, args: Namespace) -> Self:
+        """Creates an instance of the dataclass from the parsed command-line arguments.
+        Each subcommand-representing dataclass has to be handled explicitly via
+        this method.
+        """
+        return cls._from_cli_args(args, handle_subcommands=False)
 
     @classmethod
     def _register_cli_args(
@@ -43,7 +55,7 @@ class OptionsBase:
             parser: An instance of argparse.ArgumentParser to which the arguments will be added.
             list_append: If True, non-positional list fields will use the 'append' action instead of 'nargs=+'.
         """
-        for interpreted_field in cls.interpret_fields(ignore_subcommand_fields):
+        for interpreted_field in cls._interpret_fields(ignore_subcommand_fields):
             arg_name = interpreted_field.name.replace(" ", "-")
             arg_type = interpreted_field.parse_method or interpreted_field.field_type
 
@@ -87,23 +99,18 @@ class OptionsBase:
             )
 
     @classmethod
-    def interpret_fields(
+    def _interpret_fields(
         cls, ignore_subcommand_fields: bool
     ) -> Iterable[FieldInterpretation]:
         """Interprets the dataclass fields and yields FieldInterpretation instances."""
-        for cls_field in cls._cli_arg_fields(ignore_subcommand_fields):
+        for cls_field in cls._arg_fields(ignore_subcommand_fields):
             yield FieldInterpretation(cls, cls_field)
-
-    @classmethod
-    def from_cli_args(cls, args: Namespace) -> Self:
-        """Creates an instance of the dataclass from the parsed command-line arguments."""
-        return cls._from_cli_args(args, handle_subcommands=False)
 
     @classmethod
     def _from_cli_args(cls, args: Namespace, handle_subcommands: bool) -> Self:
         kwargs = {
             cls_field.name: getattr(args, cls_field.name)
-            for cls_field in cls._cli_arg_fields(
+            for cls_field in cls._arg_fields(
                 ignore_subcommand_fields=handle_subcommands
             )
         }
@@ -135,7 +142,7 @@ class OptionsBase:
         ]
 
     @classmethod
-    def _cli_arg_fields(cls, ignore_subcommand_fields: bool) -> Iterable[Field]:
+    def _arg_fields(cls, ignore_subcommand_fields: bool) -> Iterable[Field]:
         from ddargparse.subcommands import SubcommandHandler
 
         if not ignore_subcommand_fields:
