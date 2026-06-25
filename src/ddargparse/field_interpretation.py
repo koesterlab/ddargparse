@@ -1,3 +1,4 @@
+from ddargparse.common import is_any_type
 from typing import Any
 from typing import Callable
 from typing import get_args
@@ -20,11 +21,19 @@ class FieldInterpretation:
     def __init__(self, dataclass: type, cls_field: Field) -> None:
         raise_invalid = partial(_raise_invalid, cls_field=cls_field)
 
+        if not is_any_type(cls_field.type):
+            raise_invalid(
+                "Field types may not be given as str and must be class names or "
+                f"primitive types (found: {cls_field.type!r})."
+            )
+        self.field_type: Type = cls_field.type  # type: ignore
+
         self.is_positional: bool = cls_field.metadata.get("positional", False)
         self.field_name: str = cls_field.name
         self.name: str = self.field_name.replace("_", " ")
-        self.parse_method: Callable | None = getattr(dataclass, f"parse_{cls_field.name}", None)
-        self.field_type: Type = cls_field.type
+        self.parse_method: Callable | None = getattr(
+            dataclass, f"parse_{cls_field.name}", None
+        )
         self.is_optional: bool = False
         self.optional_type: Type | None = None
         self.default: Any = None
@@ -71,9 +80,10 @@ class FieldInterpretation:
                         raise_invalid("Default value must be an instance of the enum.")
                 if not self.parse_method:
                     self.metavar = enum_handler.metavar()
-                self.parse_method = EnumArgTypeHandler(cls_field, enum_handler, custom_parse_method=self.parse_method)
+                self.parse_method = EnumArgTypeHandler(
+                    cls_field, enum_handler, custom_parse_method=self.parse_method
+                )
 
             if self.field_type is list or get_origin(self.field_type) is list:
                 self.is_list = True
                 self.list_item_type = get_args(self.field_type)[0]
-

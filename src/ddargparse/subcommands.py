@@ -1,6 +1,6 @@
 from ddargparse.unions import UnionHandler
 from inspect import isclass
-from ddargparse.options import _raise_invalid
+from ddargparse.common import _raise_invalid
 from dataclasses import dataclass, Field
 from ddargparse.options import OptionsBase
 

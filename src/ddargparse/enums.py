@@ -32,7 +32,7 @@ class EnumHandler[E: Enum]:
 class EnumArgTypeHandler[E: Enum]:
     cls_field: Field
     enum_handler: EnumHandler[E]
-    custom_parse_method: Callable[str, E] | None
+    custom_parse_method: Callable | None
 
     def __call__(self, choice: str) -> E:
         if self.custom_parse_method is not None:
@@ -40,7 +40,8 @@ class EnumArgTypeHandler[E: Enum]:
             if not isinstance(parsed, self.enum_handler.enum_cls):
                 raise _raise_invalid(
                     "Custom parse method returned non-enum type "
-                    f"{type(parsed)} instead of {E}"
+                    f"{type(parsed)} instead of {E}",
+                    self.cls_field,
                 )
             return parsed
         return self.enum_handler.choice_to_item(choice)

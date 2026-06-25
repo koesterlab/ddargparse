@@ -1,17 +1,10 @@
+from typing import Any
 from ddargparse.field_interpretation import FieldInterpretation
-from ddargparse.unions import UnionHandler
-from typing import Sequence, Any, Iterable
-from ddargparse.common import _raise_invalid
-from ddargparse.enums import EnumArgTypeHandler
-from inspect import isclass
-from ddargparse.enums import EnumHandler
-from enum import Enum
-from functools import partial
+from typing import Sequence, Iterable
 from dataclasses import Field
-import dataclasses
 from dataclasses import dataclass, fields
 from argparse import ArgumentParser, Namespace
-from typing import Self, get_args, get_origin
+from typing import Self
 
 
 @dataclass
@@ -54,14 +47,15 @@ class OptionsBase:
             arg_name = interpreted_field.name.replace(" ", "-")
             arg_type = interpreted_field.parse_method or interpreted_field.field_type
 
-            kwargs = {
-                "help": interpreted_field.help
-            }
+            kwargs: dict[str, Any] = {"help": interpreted_field.help}
 
             if interpreted_field.is_optional:
                 if not interpreted_field.parse_method:
                     arg_type = interpreted_field.optional_type
-            elif interpreted_field.default is None and not interpreted_field.is_positional:
+            elif (
+                interpreted_field.default is None
+                and not interpreted_field.is_positional
+            ):
                 kwargs["required"] = True
 
             if interpreted_field.field_type is bool:
