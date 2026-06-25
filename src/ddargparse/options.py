@@ -1,6 +1,6 @@
+from ddargparse.field_interpretation import FieldInterpretation
 from ddargparse.unions import UnionHandler
-from typing import Sequence
-from typing import Iterable
+from typing import Sequence, Any, Iterable
 from ddargparse.common import _raise_invalid
 from ddargparse.enums import EnumArgTypeHandler
 from inspect import isclass
@@ -19,7 +19,9 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
-    def parse_args(cls, args: Sequence[str] | None = None, list_append: bool = False) -> Self:
+    def parse_args(
+        cls, args: Sequence[str] | None = None, list_append: bool = False
+    ) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass."""
 
         parser = ArgumentParser(description=cls.__doc__)
@@ -48,93 +50,55 @@ class OptionsBase:
             parser: An instance of argparse.ArgumentParser to which the arguments will be added.
             list_append: If True, non-positional list fields will use the 'append' action instead of 'nargs=+'.
         """
-        cls_fields = cls._cli_arg_fields(ignore_subcommand_fields)
-        for cls_field in cls_fields:
-            raise_invalid = partial(_raise_invalid, cls_field=cls_field)
-
-            positional = cls_field.metadata.get("positional", False)
-
-            arg_name = cls_field.name.replace("_", "-")
-
-            parse_method = getattr(cls, f"parse_{cls_field.name}", None)
-            field_type = cls_field.type
-
-            union_handler = UnionHandler(cls_field)
-
-            if union_handler.is_union() and union_handler.union_contains_none():
-                is_optional = True
-                field_type = union_handler.union_single_non_none_type()
-            else:
-                is_optional = False
-
-            arg_type = parse_method or field_type
-
-            default = None
-            if callable(cls_field.default_factory):
-                default = cls_field.default_factory()
-            elif cls_field.default is not None and not isinstance(
-                cls_field.default, dataclasses._MISSING_TYPE
-            ):
-                default = cls_field.default
+        for interpreted_field in cls.interpret_fields(ignore_subcommand_fields):
+            arg_name = interpreted_field.name.replace(" ", "-")
+            arg_type = interpreted_field.parse_method or interpreted_field.field_type
 
             kwargs = {
-                "help": cls_field.metadata.get("help"),
+                "help": interpreted_field.help
             }
-            if is_optional:
-                if positional:
-                    raise_invalid(
-                        "Positional arguments cannot be optional, remove the None "
-                        "in the type annotation."
-                    )
-            elif arg_type is not bool and default is None and not positional:
+
+            if interpreted_field.is_optional:
+                if not interpreted_field.parse_method:
+                    arg_type = interpreted_field.optional_type
+            elif interpreted_field.default is None and not interpreted_field.is_positional:
                 kwargs["required"] = True
 
-            if arg_type is bool:
-                if positional:
-                    raise_invalid("Boolean flags cannot be positional.")
-                if default is None:
-                    default = False
-                if not isinstance(default, bool):
-                    raise_invalid(
-                        "Boolean fields must have a default value of True or False."
-                    )
-                if default is True:
+            if interpreted_field.field_type is bool:
+                if interpreted_field.default is True:
                     arg_name = f"not-{arg_name}"
                     kwargs["action"] = "store_false"
-                    kwargs["dest"] = cls_field.name
+                    kwargs["dest"] = interpreted_field.field_name
                 else:
                     kwargs["action"] = "store_true"
             else:
-                if isclass(arg_type) and issubclass(arg_type, Enum):
-                    enum_handler = EnumHandler(arg_type)
-                    kwargs["metavar"] = enum_handler.metavar()
-                    if default is not None:
-                        if isinstance(default, arg_type):
-                            default = enum_handler.item_to_choice(default)
-                        else:
-                            raise_invalid(
-                                "Default value must be an instance of the enum."
-                            )
-                    arg_type = EnumArgTypeHandler(arg_name, enum_handler)
+                kwargs["default"] = interpreted_field.default
 
-                kwargs["default"] = default
-                if field_type is list or get_origin(field_type) is list:
-                    kwargs["type"] = get_args(field_type)[0]
-                    if list_append and not positional:
+                if interpreted_field.is_list:
+                    # TODO: test list in combination with parse_func
+                    kwargs["type"] = interpreted_field.list_item_type
+                    if list_append and not interpreted_field.is_positional:
                         kwargs["action"] = "append"
                     else:
                         kwargs["nargs"] = "+"
                 else:
                     kwargs["type"] = arg_type
 
-            metavar = cls_field.metadata.get("metavar", None)
-            if metavar is not None:
-                kwargs["metavar"] = metavar
+                if interpreted_field.metavar is not None:
+                    kwargs["metavar"] = interpreted_field.metavar
 
             parser.add_argument(
-                f"--{arg_name}" if not positional else arg_name,
+                f"--{arg_name}" if not interpreted_field.is_positional else arg_name,
                 **kwargs,
             )
+
+    @classmethod
+    def interpret_fields(
+        cls, ignore_subcommand_fields: bool
+    ) -> Iterable[FieldInterpretation]:
+        """Interprets the dataclass fields and yields FieldInterpretation instances."""
+        for cls_field in cls._cli_arg_fields(ignore_subcommand_fields):
+            yield FieldInterpretation(cls, cls_field)
 
     @classmethod
     def from_cli_args(cls, args: Namespace) -> Self:
