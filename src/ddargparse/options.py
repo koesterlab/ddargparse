@@ -1,3 +1,11 @@
+from ddargparse.gui import State
+import sys
+import asyncio
+from typing import ClassVar
+from dataclasses import field
+from ddargparse.gui import Gui
+from threading import Thread
+from typing import TYPE_CHECKING
 from typing import Any
 from ddargparse.field_interpretation import FieldInterpretation
 from typing import Sequence, Iterable
@@ -10,19 +18,51 @@ from typing import Self
 @dataclass
 class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
+    _gui: ClassVar[Gui | None] = field(default=None, init=False)
+    gui: Gui | None = field(default=None, init=False)
 
     @classmethod
-    def from_cli_args(
-        cls, args: Sequence[str] | None = None, list_append: bool = False
+    async def obtain(
+        cls,
+        args: Sequence[str] | None = None,
+        list_append: bool = False,
+        offer_gui: bool = False,
     ) -> Self:
         """Parses command-line arguments and returns an instance of the dataclass.
         This approach includes automatic subcommand handling (see docs).
         """
+        if cls._gui is not None:
+            if not offer_gui:
+                raise ValueError(
+                    "offer_gui may not be switched on and of for multiple calls "
+                    "of obtain()"
+                )
+            if not cls._gui.is_closed():
+                # processing of options is done and obtain has been called again
+                cls._gui.set_state(State(options=True))
+
+            else:
+                # also close the process
+                sys.exit(0)
+
+        if offer_gui:
+            pre_parser = ArgumentParser(description=cls.__doc__)
+            pre_parser.add_argument(
+                "--gui",
+                action="store_true",
+                help="Show graphical user interface."
+            )
+            parsed_args = pre_parser.parse_known_args()
+            if parsed_args.gui:
+                cls._gui = Gui()
+                await cls._gui.run()
+                options = await cls._gui.get_options()
+                return options
 
         parser = ArgumentParser(description=cls.__doc__)
         cls._managed_register_cli_args(parser, list_append=list_append)
-
         parsed_args = parser.parse_args(args)
+
         options = cls._from_cli_args(parsed_args, handle_subcommands=True)
 
         return options
@@ -38,7 +78,7 @@ class OptionsBase:
         )
 
     @classmethod
-    def from_parsed_cli_args(cls, args: Namespace) -> Self:
+    def from_cli_args(cls, args: Namespace) -> Self:
         """Creates an instance of the dataclass from the parsed command-line arguments.
         Each subcommand-representing dataclass has to be handled explicitly via
         this method.
@@ -55,7 +95,7 @@ class OptionsBase:
             parser: An instance of argparse.ArgumentParser to which the arguments will be added.
             list_append: If True, non-positional list fields will use the 'append' action instead of 'nargs=+'.
         """
-        for interpreted_field in cls._interpret_fields(ignore_subcommand_fields):
+        for interpreted_field in cls.interpret_fields(ignore_subcommand_fields):
             arg_name = interpreted_field.name.replace(" ", "-")
             arg_type = interpreted_field.parse_method or interpreted_field.field_type
 
@@ -99,7 +139,7 @@ class OptionsBase:
             )
 
     @classmethod
-    def _interpret_fields(
+    def interpret_fields(
         cls, ignore_subcommand_fields: bool
     ) -> Iterable[FieldInterpretation]:
         """Interprets the dataclass fields and yields FieldInterpretation instances."""

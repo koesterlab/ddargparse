@@ -64,11 +64,11 @@ DoSomethingOptions.register_cli_args(subparser)
 ```python
 args = parser.parse_args()
 # obtain instance of dataclass with global options
-options = Options.from_parsed_cli_args(args)
+options = Options.from_cli_args(args)
 match args.subcommand:
     case "do-something":
         # obtain instance of dataclass with subcommand options
-        do_something_options = DoSomethingOptions.from_parsed_cli_args(args)
+        do_something_options = DoSomethingOptions.from_cli_args(args)
 ```
 
 ### Mode b: dataclass only
@@ -120,11 +120,18 @@ class DoSomethingOptions(ddargparse.OptionsBase):
 #### Step 2: CLI argument parsing and option dataclass instantiation
 
 Then, the entire hierarchy of options, including automatic determination of the
-selected subcommand and its options can be obtained via calling `parse_argv()` on the
+selected subcommand and its options can be obtained via calling `obtain()` on the
 top-level `Options` class.
 
 ```python
-options = Options.from_cli_args()
+options = Options.obtain()
+```
+
+For interactive mode, specify to use a GUI:
+
+```python
+while options:= Options.obtain():
+    ...
 ```
 
 
@@ -136,7 +143,7 @@ options = Options.from_cli_args()
 - Custom parse methods: define a `parse_<field_name>(cls, value: str)` classmethod to override the argument type converter.
 - Mark options as positional (`"positional": True`).
 - Automatic and natural inference whether option is required (no `field(default=...)` and no `| None` in type annotation).
-- Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)` or `parse_argv(list_append=True|False)`.
+- Choose between append-style (`--arg item1 --arg item2 --arg item3`) and nargs-style (default, `--arg item1 item2 item3`) list arguments via `register_cli_args(..., list_append=True|False)` or `obtain(list_append=True|False)`.
 - Proper support for enums: simply specify an enum type and ddargparse handles ensures that proper (lower, kebab-cased) choices are inferred from the enum item names and the correct type is returned.
 - Seamless integration with standard argparse API or dataclass only modes that hides all technical details of the argument parsing.
 - No additional dependencies.

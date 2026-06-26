@@ -4,10 +4,12 @@ description = "Dataclass driven argparse handling"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-dependencies = []
 name = "ddargparse"
 requires-python = ">= 3.12"
 version = "0.3.2"
+
+[project.optional-dependencies]
+ui = ["flet >=0.85.3,<0.86", "flet-desktop"]
 
 [project.urls]
 repository = "https://github.com/koesterlab/ddargparse"
@@ -26,7 +28,7 @@ requires-pixi = ">=0.63"
 ddargparse = { path = ".", editable = true }
 
 [tool.pixi.environments]
-dev = { features = ["dev"] }
+dev = { features = ["dev", "ui"] }
 publish = { features = ["publish"] }
 minpy = { features = ["minpy", "dev"] }
 
