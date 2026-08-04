@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0](https://github.com/koesterlab/ddargparse/compare/v0.3.2...v1.0.0) (2026-08-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename public method parse_args into from_cli_args and from_cli_args into from_parsed_cli_args (attention, this will break your code, sorry!) ([#13](https://github.com/koesterlab/ddargparse/issues/13))
+
+### Features
+
+* move field interpretation into separate class ([#11](https://github.com/koesterlab/ddargparse/issues/11)) ([f29fb39](https://github.com/koesterlab/ddargparse/commit/f29fb39146c70252706fcd0ec0e7995b223c8811))
+
+
+### Bug Fixes
+
+* fix handling of nested subcommand dataclasses and add corresponding tests ([#14](https://github.com/koesterlab/ddargparse/issues/14)) ([fc552eb](https://github.com/koesterlab/ddargparse/commit/fc552eb54d48ec15a63f01aa2353fab6ca4394d6))
+
+
+### Code Refactoring
+
+* rename public method parse_args into from_cli_args and from_cli_args into from_parsed_cli_args (attention, this will break your code, sorry!) ([#13](https://github.com/koesterlab/ddargparse/issues/13)) ([b916b86](https://github.com/koesterlab/ddargparse/commit/b916b86625f9186f5fa103ad3dbe21a2d7cb0aad))
+
 ## [0.3.2](https://github.com/koesterlab/ddargparse/compare/v0.3.1...v0.3.2) (2026-03-21)
 
 
