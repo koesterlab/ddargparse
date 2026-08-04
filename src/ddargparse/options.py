@@ -12,6 +12,10 @@ class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
 
     @classmethod
+    def _subcommand_dest(cls) -> str:
+        return f"{cls.__name__}__subcommand"
+
+    @classmethod
     def from_cli_args(
         cls, args: Sequence[str] | None = None, list_append: bool = False
     ) -> Self:
@@ -118,9 +122,11 @@ class OptionsBase:
         if handle_subcommands:
             from ddargparse.subcommands import SubcommandHandler
 
+            selected_subcommand = getattr(args, cls._subcommand_dest(), None)
+
             for cls_field in cls._subcommand_fields():
                 handler = SubcommandHandler(cls_field)
-                if args.subcommand == handler.subcommand_name():
+                if selected_subcommand == handler.subcommand_name():
                     subcommand_cls = handler.subcommand_options_cls()
                     subcommand_options = subcommand_cls._from_cli_args(
                         args, handle_subcommands=True
@@ -166,7 +172,7 @@ class OptionsBase:
         subcommand_fields = cls._subcommand_fields()
         subparsers = None
         if subcommand_fields:
-            subparsers = parser.add_subparsers(dest="subcommand")
+            subparsers = parser.add_subparsers(dest=cls._subcommand_dest())
         for cls_field in subcommand_fields:
             handler = SubcommandHandler(cls_field)
 
