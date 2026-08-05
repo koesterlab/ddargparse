@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/koesterlab/ddargparse/compare/v1.0.0...v1.0.1) (2026-08-05)
+
+
+### Bug Fixes
+
+* ensure that proper types are returned when used in combination with "| None" ([#15](https://github.com/koesterlab/ddargparse/issues/15)) ([228f0b3](https://github.com/koesterlab/ddargparse/commit/228f0b342945e74ada5b99a6019ab08b1cda4f09))
+
 ## [1.0.0](https://github.com/koesterlab/ddargparse/compare/v0.3.2...v1.0.0) (2026-08-04)
 
 
