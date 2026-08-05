@@ -35,7 +35,6 @@ class FieldInterpretation:
             dataclass, f"parse_{cls_field.name}", None
         )
         self.is_optional: bool = False
-        self.optional_type: Type | None = None
         self.default: Any = None
         self.metavar: str | None = cls_field.metadata.get("metavar", None)
         self.help: str | None = cls_field.metadata.get("help")

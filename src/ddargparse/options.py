@@ -67,7 +67,7 @@ class OptionsBase:
 
             if interpreted_field.is_optional:
                 if not interpreted_field.parse_method:
-                    arg_type = interpreted_field.optional_type
+                    arg_type = interpreted_field.field_type
             elif (
                 interpreted_field.default is None
                 and not interpreted_field.is_positional
