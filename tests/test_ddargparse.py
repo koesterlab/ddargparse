@@ -1,3 +1,4 @@
+from pathlib import Path
 from enum import Enum
 import pytest
 from argparse import ArgumentParser
@@ -29,6 +30,7 @@ class SimpleOptions(OptionsBase):
 
     name: str | None = field(metadata={"help": "A name"})
     count: int = field(default=0, metadata={"help": "A count"})
+    path: Path | None = field(default=None, metadata={"help": "A path"})
 
 
 @dataclass
@@ -205,6 +207,10 @@ class TestSimpleOptions:
     def test_invalid_type(self):
         with pytest.raises(ValueError, match="Field types may not be given as"):
             make_parser(InvalidTypeOptions)
+
+    def test_path_value(self):
+        opts = parse(SimpleOptions, ["--path", "/tmp/foo"])
+        assert opts.path == Path("/tmp/foo")
 
 
 class TestMultiTypeOptions:
