@@ -1,3 +1,4 @@
+from pathlib import Path
 from enum import Enum
 import pytest
 from argparse import ArgumentParser
@@ -29,6 +30,7 @@ class SimpleOptions(OptionsBase):
 
     name: str | None = field(metadata={"help": "A name"})
     count: int = field(default=0, metadata={"help": "A count"})
+    path: Path | None = field(default=None, metadata={"help": "A path"})
 
 
 @dataclass
@@ -162,6 +164,23 @@ class PureDataclassInvalidSubcommandOptions(OptionsBase):
     do_bar: MetavarOptions
 
 
+@dataclass
+class NestedLeafOptions(OptionsBase):
+    leaf_value: int = field(metadata={"help": "Leaf value"})
+
+
+@dataclass
+class NestedBranchOptions(OptionsBase):
+    branch_name: str = field(metadata={"help": "Branch name"})
+    leaf: NestedLeafOptions | None
+
+
+@dataclass
+class NestedRootOptions(OptionsBase):
+    root_name: str = field(metadata={"help": "Root name"})
+    branch: NestedBranchOptions | None
+
+
 class TestSimpleOptions:
     def test_defaults_when_no_args(self):
         opts = parse(SimpleOptions, [])
@@ -188,6 +207,10 @@ class TestSimpleOptions:
     def test_invalid_type(self):
         with pytest.raises(ValueError, match="Field types may not be given as"):
             make_parser(InvalidTypeOptions)
+
+    def test_path_value(self):
+        opts = parse(SimpleOptions, ["--path", "/tmp/foo"])
+        assert opts.path == Path("/tmp/foo")
 
 
 class TestMultiTypeOptions:
@@ -364,3 +387,33 @@ class TestPureDataclassMode:
             PureDataclassInvalidSubcommandOptions.from_cli_args(
                 ["--value", "test", "do-bar", "--name", "alice", "--count", "5"]
             )
+
+    def test_nested_subcommands(self):
+        options = NestedRootOptions.from_cli_args(
+            [
+                "--root-name",
+                "root",
+                "branch",
+                "--branch-name",
+                "alpha",
+                "leaf",
+                "--leaf-value",
+                "7",
+            ]
+        )
+
+        assert options.root_name == "root"
+        assert options.branch is not None
+        assert options.branch.branch_name == "alpha"
+        assert options.branch.leaf is not None
+        assert options.branch.leaf.leaf_value == 7
+
+    def test_nested_subcommand_without_leaf(self):
+        options = NestedRootOptions.from_cli_args(
+            ["--root-name", "root", "branch", "--branch-name", "alpha"]
+        )
+
+        assert options.root_name == "root"
+        assert options.branch is not None
+        assert options.branch.branch_name == "alpha"
+        assert options.branch.leaf is None

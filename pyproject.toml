@@ -6,7 +6,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 name = "ddargparse"
 requires-python = ">= 3.12"
-version = "0.3.2"
+version = "1.0.1"
 
 [project.optional-dependencies]
 ui = ["flet >=0.85.3,<0.86", "flet-desktop"]

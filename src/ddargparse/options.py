@@ -22,6 +22,9 @@ class OptionsBase:
     gui: Gui | None = field(default=None, init=False)
 
     @classmethod
+    def _subcommand_dest(cls) -> str:
+        return f"{cls.__name__}__subcommand"
+
     async def obtain(
         cls,
         args: Sequence[str] | None = None,
@@ -103,7 +106,7 @@ class OptionsBase:
 
             if interpreted_field.is_optional:
                 if not interpreted_field.parse_method:
-                    arg_type = interpreted_field.optional_type
+                    arg_type = interpreted_field.field_type
             elif (
                 interpreted_field.default is None
                 and not interpreted_field.is_positional
@@ -158,9 +161,11 @@ class OptionsBase:
         if handle_subcommands:
             from ddargparse.subcommands import SubcommandHandler
 
+            selected_subcommand = getattr(args, cls._subcommand_dest(), None)
+
             for cls_field in cls._subcommand_fields():
                 handler = SubcommandHandler(cls_field)
-                if args.subcommand == handler.subcommand_name():
+                if selected_subcommand == handler.subcommand_name():
                     subcommand_cls = handler.subcommand_options_cls()
                     subcommand_options = subcommand_cls._from_cli_args(
                         args, handle_subcommands=True
@@ -206,7 +211,7 @@ class OptionsBase:
         subcommand_fields = cls._subcommand_fields()
         subparsers = None
         if subcommand_fields:
-            subparsers = parser.add_subparsers(dest="subcommand")
+            subparsers = parser.add_subparsers(dest=cls._subcommand_dest())
         for cls_field in subcommand_fields:
             handler = SubcommandHandler(cls_field)
 
