@@ -37,12 +37,7 @@ class Gui[O: "OptionsBase"]:
 
     async def _update(self, state: State) -> None:
         def view(content):
-            self.page.controls.append(
-                ft.SafeArea(
-                    expand=True,
-                    content=content
-                )
-            )
+            self.page.controls.append(ft.SafeArea(expand=True, content=content))
 
         self.page.controls.clear()
         if state.options:
@@ -51,11 +46,7 @@ class Gui[O: "OptionsBase"]:
             )
         elif state.progress is not None:
             view(
-                content=ft.Row(
-                    controls=[
-                        ft.ProgressBar(state.progress)
-                    ]
-                ),
+                content=ft.Row(controls=[ft.ProgressBar(state.progress)]),
             )
         self.page.update_async()
 
@@ -79,13 +70,14 @@ class Gui[O: "OptionsBase"]:
                 return ft.TextField(label=name)
             elif field_type is float:
                 return ft.TextField(label=name)
-            elif field_type
+            # TODO go on with the other possible field types
 
         return ft.Row(
             controls=[
                 control
-                for interpreted_field in
-                self._options_cls.interpret_fields(ignore_subcommand_fields=True)
+                for interpreted_field in self._options_cls.interpret_fields(
+                    ignore_subcommand_fields=True
+                )
                 for control in render_control(interpreted_field)
             ]
         )
@@ -94,7 +86,8 @@ class Gui[O: "OptionsBase"]:
         return self._app_closed_event.is_set()
 
     def get_options(self) -> O:
-
+        """Build options class instance from the GUI input fields and return it."""
+        ...
 
     def show_progress(self, progress: float, progress_msg: str | None) -> None:
         self.set_state(State(progress=progress, progress_msg=progress_msg))

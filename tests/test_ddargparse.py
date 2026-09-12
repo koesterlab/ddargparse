@@ -373,7 +373,7 @@ class TestEnumOptions:
 
 class TestPureDataclassMode:
     def test_subcommands(self):
-        options = PureDataclassOptions.from_cli_args(
+        options = PureDataclassOptions.obtain(
             ["--value", "test", "do-foo", "--name", "alice", "--count", "5"]
         )
         assert options.value == "test"
@@ -384,12 +384,12 @@ class TestPureDataclassMode:
 
     def test_invalid_subcommand(self):
         with pytest.raises(ValueError, match="Subcommand fields must be optional"):
-            PureDataclassInvalidSubcommandOptions.from_cli_args(
+            PureDataclassInvalidSubcommandOptions.obtain(
                 ["--value", "test", "do-bar", "--name", "alice", "--count", "5"]
             )
 
     def test_nested_subcommands(self):
-        options = NestedRootOptions.from_cli_args(
+        options = NestedRootOptions.obtain(
             [
                 "--root-name",
                 "root",
@@ -409,7 +409,7 @@ class TestPureDataclassMode:
         assert options.branch.leaf.leaf_value == 7
 
     def test_nested_subcommand_without_leaf(self):
-        options = NestedRootOptions.from_cli_args(
+        options = NestedRootOptions.obtain(
             ["--root-name", "root", "branch", "--branch-name", "alpha"]
         )
 

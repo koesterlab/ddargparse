@@ -18,21 +18,39 @@ from typing import Self
 @dataclass
 class OptionsBase:
     """Base class for defining command-line options using dataclasses."""
+
     _gui: ClassVar[Gui | None] = field(default=None, init=False)
-    gui: Gui | None = field(default=None, init=False)
 
     @classmethod
     def _subcommand_dest(cls) -> str:
         return f"{cls.__name__}__subcommand"
 
-    async def obtain(
+    @classmethod
+    def obtain(
+        cls,
+        args: Sequence[str] | None = None,
+        list_append: bool = False,
+    ) -> Self:
+        """Parses command-line arguments and returns an instance of the dataclass.
+        This approach includes automatic subcommand handling (see docs).
+        """
+        parser = ArgumentParser(description=cls.__doc__)
+        cls._managed_register_cli_args(parser, list_append=list_append)
+        parsed_args = parser.parse_args(args)
+
+        options = cls._from_parsed_cli_args(parsed_args, handle_subcommands=True)
+
+        return options
+
+    @classmethod
+    async def obtain_async(
         cls,
         args: Sequence[str] | None = None,
         list_append: bool = False,
         offer_gui: bool = False,
     ) -> Self:
-        """Parses command-line arguments and returns an instance of the dataclass.
-        This approach includes automatic subcommand handling (see docs).
+        """Parses command-line arguments or UI settings and returns an instance of the
+        dataclass. This approach includes automatic subcommand handling (see docs).
         """
         if cls._gui is not None:
             if not offer_gui:
@@ -51,9 +69,7 @@ class OptionsBase:
         if offer_gui:
             pre_parser = ArgumentParser(description=cls.__doc__)
             pre_parser.add_argument(
-                "--gui",
-                action="store_true",
-                help="Show graphical user interface."
+                "--gui", action="store_true", help="Show graphical user interface."
             )
             parsed_args = pre_parser.parse_known_args()
             if parsed_args.gui:
@@ -62,13 +78,8 @@ class OptionsBase:
                 options = await cls._gui.get_options()
                 return options
 
-        parser = ArgumentParser(description=cls.__doc__)
-        cls._managed_register_cli_args(parser, list_append=list_append)
-        parsed_args = parser.parse_args(args)
-
-        options = cls._from_cli_args(parsed_args, handle_subcommands=True)
-
-        return options
+        # fall back to CLI parsing if GUI is not offered or not selected
+        return cls.obtain(args, list_append=list_append)
 
     @classmethod
     def register_cli_args(
@@ -81,12 +92,12 @@ class OptionsBase:
         )
 
     @classmethod
-    def from_cli_args(cls, args: Namespace) -> Self:
+    def from_parsed_cli_args(cls, args: Namespace) -> Self:
         """Creates an instance of the dataclass from the parsed command-line arguments.
         Each subcommand-representing dataclass has to be handled explicitly via
         this method.
         """
-        return cls._from_cli_args(args, handle_subcommands=False)
+        return cls._from_parsed_cli_args(args, handle_subcommands=False)
 
     @classmethod
     def _register_cli_args(
@@ -150,7 +161,7 @@ class OptionsBase:
             yield FieldInterpretation(cls, cls_field)
 
     @classmethod
-    def _from_cli_args(cls, args: Namespace, handle_subcommands: bool) -> Self:
+    def _from_parsed_cli_args(cls, args: Namespace, handle_subcommands: bool) -> Self:
         kwargs = {
             cls_field.name: getattr(args, cls_field.name)
             for cls_field in cls._arg_fields(
@@ -167,7 +178,7 @@ class OptionsBase:
                 handler = SubcommandHandler(cls_field)
                 if selected_subcommand == handler.subcommand_name():
                     subcommand_cls = handler.subcommand_options_cls()
-                    subcommand_options = subcommand_cls._from_cli_args(
+                    subcommand_options = subcommand_cls._from_parsed_cli_args(
                         args, handle_subcommands=True
                     )
                     kwargs[cls_field.name] = subcommand_options

@@ -4,8 +4,9 @@ import flet as ft
 
 app_closed_event = asyncio.Event()
 
+
 async def main(page):
-    # Pass our global event into the page session if needed, 
+    # Pass our global event into the page session if needed,
     # or handle it via a closure like we do here:
     def on_disconnect(e):
         print("Flet window closed by user.")
@@ -19,6 +20,7 @@ async def main(page):
 
     page.controls.append(ft.Button("Click me", on_click=button_click))
 
+
 async def app():
     _ = asyncio.ensure_future(ft.run_async(main))
     print("app started")
@@ -29,5 +31,6 @@ async def app():
         await asyncio.sleep(5)
     print("done, closing")
     sys.exit(0)
+
 
 asyncio.run(app())

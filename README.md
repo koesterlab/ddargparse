@@ -64,7 +64,7 @@ DoSomethingOptions.register_cli_args(subparser)
 ```python
 args = parser.parse_args()
 # obtain instance of dataclass with global options
-options = Options.from_cli_args(args)
+options = Options.from_parsed_cli_args(args)
 match args.subcommand:
     case "do-something":
         # obtain instance of dataclass with subcommand options
@@ -127,12 +127,22 @@ top-level `Options` class.
 options = Options.obtain()
 ```
 
-For interactive mode, specify to use a GUI:
+For interactive mode, specify to offer a GUI (this has to be async):
 
 ```python
-while options:= Options.obtain():
-    ...
+import asyncio
+
+async def main_async():
+    while options:= await Options.obtain_async(offer_gui=True):
+        ...
+
+def main():
+    asyncio.run(main_async())
 ```
+
+The options are then either filled via the GUI or via the CLI.
+The `while` loop ensures that the user can repeatedly configure different options.
+Within the loop body, the software should react on the chosen options.
 
 
 
