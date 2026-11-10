@@ -1,5 +1,5 @@
 from pathlib import Path
-from enum import Enum
+from enum import Enum, StrEnum
 import pytest
 from argparse import ArgumentParser
 from dataclasses import dataclass, field
@@ -21,6 +21,12 @@ def parse(option_class, argv: list[str], list_append: bool = False):
     return option_class.from_parsed_cli_args(parser.parse_args(argv))
 
 
+class DummyChoice(StrEnum):
+    ALPHA = "alpha"
+    BETA = "beta"
+    GAMMA = "gamma"
+
+
 @dataclass
 class SimpleOptions(OptionsBase):
     """The CLI description
@@ -31,6 +37,9 @@ class SimpleOptions(OptionsBase):
     name: str | None = field(metadata={"help": "A name"})
     count: int = field(default=0, metadata={"help": "A count"})
     path: Path | None = field(default=None, metadata={"help": "A path"})
+    threshold: float | DummyChoice = field(
+        default=0.5, metadata={"help": "A threshold"}
+    )
 
 
 @dataclass
@@ -211,6 +220,16 @@ class TestSimpleOptions:
     def test_path_value(self):
         opts = parse(SimpleOptions, ["--path", "/tmp/foo"])
         assert opts.path == Path("/tmp/foo")
+
+    def test_union_type(self):
+        opts = parse(SimpleOptions, ["--threshold", "0.7"])
+        assert opts.threshold == 0.7
+        opts = parse(SimpleOptions, ["--threshold", "alpha"])
+        assert opts.threshold == DummyChoice.ALPHA
+
+    def test_invalid_union_value(self):
+        with pytest.raises(SystemExit):
+            parse(SimpleOptions, ["--threshold", "invalid"])
 
 
 class TestMultiTypeOptions:

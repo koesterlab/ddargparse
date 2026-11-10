@@ -1,3 +1,4 @@
+import types
 from typing import Any
 from ddargparse.field_interpretation import FieldInterpretation
 from typing import Sequence, Iterable
@@ -93,6 +94,21 @@ class OptionsBase:
                         kwargs["nargs"] = "+"
                 else:
                     kwargs["type"] = arg_type
+
+                # if kwargs["type"] is typing.Union
+                if isinstance(kwargs["type"], types.UnionType):
+
+                    def parse_with_union_args(value, args=kwargs["type"].__args__):
+                        for arg in args:
+                            try:
+                                return arg(value)
+                            except (TypeError, ValueError):
+                                continue
+                        raise ValueError(
+                            f"Value {value!r} does not match any type in {args!r}"
+                        )
+
+                    kwargs["type"] = parse_with_union_args
 
                 if interpreted_field.metavar is not None:
                     kwargs["metavar"] = interpreted_field.metavar

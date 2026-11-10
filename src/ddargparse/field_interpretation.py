@@ -49,8 +49,9 @@ class FieldInterpretation:
 
         if callable(cls_field.default_factory):
             self.default = cls_field.default_factory()
-        elif cls_field.default is not None and not isinstance(
-            cls_field.default, dataclasses._MISSING_TYPE
+        elif (
+            cls_field.default is not None
+            and cls_field.default is not dataclasses.MISSING
         ):
             self.default = cls_field.default
 
