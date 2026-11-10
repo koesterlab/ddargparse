@@ -1,3 +1,5 @@
+import sys
+
 from ddargparse.common import is_any_type
 from typing import Any
 from typing import Callable
@@ -49,9 +51,7 @@ class FieldInterpretation:
 
         if callable(cls_field.default_factory):
             self.default = cls_field.default_factory()
-        elif cls_field.default is not None and not isinstance(
-            cls_field.default, dataclasses._MISSING_TYPE
-        ):
+        elif cls_field.default is not None and cls_field.default is not dataclasses.MISSING:
             self.default = cls_field.default
 
         if self.is_optional and self.is_positional:
