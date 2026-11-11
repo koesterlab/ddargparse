@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/koesterlab/ddargparse/compare/v1.0.1...v1.0.2) (2026-11-10)
+
+
+### Bug Fixes
+
+* properly handle union types ([#17](https://github.com/koesterlab/ddargparse/issues/17)) ([4c04e11](https://github.com/koesterlab/ddargparse/commit/4c04e11e401968b773d56ce3316858d0e8d4ef38))
+
 ## [1.0.1](https://github.com/koesterlab/ddargparse/compare/v1.0.0...v1.0.1) (2026-08-05)
 
 
