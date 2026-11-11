@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/koesterlab/ddargparse/compare/v1.0.2...v1.0.3) (2026-11-11)
+
+
+### Bug Fixes
+
+* update twine dependency ([6bb5f4e](https://github.com/koesterlab/ddargparse/commit/6bb5f4e91e47131b67db65fc4caec1d32b85b719))
+
 ## [1.0.2](https://github.com/koesterlab/ddargparse/compare/v1.0.1...v1.0.2) (2026-11-10)
 
 
